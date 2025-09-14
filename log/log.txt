@@ -1,0 +1,60 @@
+2025-09-13 20:49:54,329 - INFO - Conexão bem-sucedida.
+2025-09-13 20:49:54,329 - INFO - Ano: 2025 Mês: 6 Total de páginas: 1859
+2025-09-13 20:49:55,151 - INFO - Erro ao processar a página 4: 'str' object has no attribute 'extend'
+2025-09-13 20:49:55,221 - INFO - Erro ao processar a página 3: 'str' object has no attribute 'extend'
+2025-09-13 20:49:55,394 - INFO - Erro ao processar a página 1: 'str' object has no attribute 'extend'
+2025-09-13 20:49:55,454 - INFO - Erro ao processar a página 2: 'str' object has no attribute 'extend'
+2025-09-13 20:49:55,783 - INFO - Erro ao processar a página 5: 'str' object has no attribute 'extend'
+2025-09-13 20:49:55,905 - INFO - Erro ao processar a página 6: 'str' object has no attribute 'extend'
+2025-09-13 20:56:25,270 - INFO - Conexão bem-sucedida.
+2025-09-13 20:56:25,270 - INFO - Ano: 2025 Mês: 6 Total de páginas: 1859
+2025-09-13 21:07:03,413 - INFO - Extração concluída.
+2025-09-13 21:07:03,413 - INFO - Total de registros obtidos: 185849
+2025-09-13 21:10:00,336 - INFO - ----- Inicio de execucao do script: 01_ingestao_api.py -----
+2025-09-13 21:10:00,985 - INFO - Conexão bem-sucedida.
+2025-09-13 21:10:00,985 - INFO - Ano: 2025 Mês: 6 Total de páginas: 1859
+2025-09-13 21:16:30,655 - INFO - Erro ao processar a página 944: HTTPSConnectionPool(host='api-dados-abertos.cearatransparente.ce.gov.br', port=443): Max retries exceeded with url: /transparencia/servidores/salarios?year=2025&month=6&page=944 (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7cf2e6e55180>, 'Connection to api-dados-abertos.cearatransparente.ce.gov.br timed out. (connect timeout=None)'))
+2025-09-13 21:20:50,448 - INFO - Extração concluída.
+2025-09-13 21:20:50,448 - INFO - Total de registros obtidos: 185749
+2025-09-13 21:20:51,156 - INFO - Arquivo salvo em: ./data/raw/salarios_2025_06_250913_212050.parquet
+2025-09-13 21:52:03,302 - INFO - ----- Inicio de execucao do script: 02_envio_landingzone_aws.py -----
+2025-09-13 21:52:03,303 - INFO - Arquivo mais recente encontrado: ./data/raw/salarios_2025_06_250913_212050.parquet
+2025-09-13 21:52:03,303 - INFO - Destino no S3: s3a://projeto-unifor-myawsbucket-493834426446/landingzone
+2025-09-13 21:52:06,674 - INFO - SparkSession e Delta Lake configurados com sucesso.
+2025-09-13 21:52:06,674 - INFO - Lendo dados do caminho: ./data/raw/salarios_2025_06_250913_212050.parquet
+2025-09-13 21:52:23,607 - INFO - Dados salvos com sucesso em formato Delta.
+2025-09-13 21:52:24,083 - INFO - SparkSession encerrada.
+2025-09-13 21:52:24,083 - INFO - Closing down clientserver connection
+2025-09-13 22:14:38,296 - INFO - ----- Inicio de execucao do script: 02_envio_landingzone_aws.py -----
+2025-09-13 22:14:38,296 - INFO - Arquivo mais recente encontrado: ./data/raw/salarios_2025_06_250913_212050.parquet
+2025-09-13 22:14:38,296 - INFO - Destino no S3: s3a://projeto-unifor-myawsbucket-493834426446/landingzone/ano=2025/mes=06/
+2025-09-13 22:14:41,640 - INFO - SparkSession e Delta Lake configurados com sucesso.
+2025-09-13 22:14:41,640 - INFO - Lendo dados do caminho: ./data/raw/salarios_2025_06_250913_212050.parquet
+2025-09-13 22:15:03,396 - INFO - Dados salvos com sucesso em formato Parquet.
+2025-09-13 22:15:03,557 - INFO - SparkSession encerrada.
+2025-09-13 22:15:03,557 - INFO - Closing down clientserver connection
+2025-09-13 22:30:39,669 - INFO - ----- Inicio de execucao do script: 03_carga_bronze_aws.py -----
+2025-09-13 22:30:42,996 - INFO - SparkSession e Delta Lake configurados com sucesso.
+2025-09-13 22:30:42,996 - INFO - Lendo dados do caminho: s3a://projeto-unifor-myawsbucket-493834426446/landingzone/ano=2025/mes=06/
+2025-09-13 22:30:48,918 - INFO - Número de linhas originais: 185749
+2025-09-13 22:30:54,653 - INFO - Número de linhas após a remoção de duplicatas: 121132
+2025-09-13 22:31:19,934 - INFO - Dados salvos com sucesso em formato Delta.
+2025-09-13 22:31:20,438 - INFO - SparkSession encerrada.
+2025-09-13 22:31:20,439 - INFO - Closing down clientserver connection
+2025-09-13 22:51:26,103 - INFO - ----- Inicio de execucao do script: 04_transform_silver_aws.py -----
+2025-09-13 22:51:29,474 - INFO - SparkSession e Delta Lake configurados com sucesso.
+2025-09-13 22:51:29,474 - INFO - Lendo dados do caminho: s3a://projeto-unifor-myawsbucket-493834426446/bronze/ano=2025/mes=06/
+2025-09-13 22:51:37,742 - INFO - Número de linhas originais: 121132
+2025-09-13 22:51:45,570 - INFO - Número de linhas após a deduplicação: 121132
+2025-09-13 22:51:53,740 - INFO - Dados processados, enriquecidos e salvos com sucesso em formato Delta.
+2025-09-13 22:51:53,899 - INFO - SparkSession encerrada.
+2025-09-13 22:51:53,899 - INFO - Closing down clientserver connection
+2025-09-13 23:01:06,754 - INFO - ----- Inicio de execucao do script: 05_gera_gold_aws.py -----
+2025-09-13 23:01:10,204 - INFO - SparkSession e Delta Lake configurados com sucesso.
+2025-09-13 23:01:10,205 - INFO - Lendo dados do caminho: s3a://projeto-unifor-myawsbucket-493834426446/silver/ano=2025/mes=06/
+2025-09-13 23:01:18,639 - INFO - Número de linhas lidas: 121132
+2025-09-13 23:01:18,669 - INFO - Schema da tabela Gold criada:
+2025-09-13 23:01:18,670 - INFO - Salvando dados agregados na camada Gold do caminho: s3a://projeto-unifor-myawsbucket-493834426446/gold/ano=2025/mes=06/
+2025-09-13 23:01:31,417 - INFO - Dados da camada Gold salvos com sucesso.
+2025-09-13 23:01:31,622 - INFO - SparkSession encerrada.
+2025-09-13 23:01:31,622 - INFO - Closing down clientserver connection
