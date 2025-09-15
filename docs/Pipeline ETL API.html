@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard do Pipeline de ETL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page vertical layout with distinct sections for Project Overview, Architecture Diagram, Project Structure, and Execution Steps. The core interaction is a clickable pipeline diagram (Bronze, Silver, Gold) that reveals a detailed modal or expanding section with specific information about that stage (purpose, transformations, code command). This design is chosen to make a complex, multi-step process easy to understand by breaking it down into interactive, digestible chunks, directly mirroring the logical flow of the pipeline. -->
+    <!-- Visualization & Content Choices: The central visualization is a custom HTML/CSS diagram for the pipeline architecture, using no external libraries to represent the flow (no Chart.js). All textual content is directly from the source README. Interaction is powered by vanilla JavaScript show/hide logic and a copy-to-clipboard function for code blocks, which enhances usability. The file structure is presented using styled HTML lists and collapsible sections. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #262626;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .details-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+            max-height: 0;
+        }
+        .details-content.show {
+            display: block;
+            max-height: 1000px;
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f1f1f1;
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #636363;
+        }
+        .arrow {
+            transition: transform 0.3s ease;
+        }
+        .expanded .arrow {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <header class="text-center mb-12">
+            <div class="flex items-center justify-center space-x-2 text-3xl md:text-5xl font-bold text-[#e67e22] mb-4">
+                <span>🚀</span>
+                <h1>Projeto Data Lake & Pipeline de ETL</h1>
+            </div>
+            <p class="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
+                Este projeto implementa um <strong>pipeline de dados</strong> com arquitetura em camadas (<strong>Bronze</strong>, <strong>Silver</strong> e <strong>Gold</strong>) usando <strong>PySpark</strong>, <strong>Delta Lake</strong> e <trong>AWS S3</trong>. O objetivo é transformar dados brutos em <strong>insights prontos para análise de negócio</strong>, garantindo <strong>qualidade, governança e escalabilidade</strong>.
+            </p>
+        </header>
+
+        <section id="arquitetura" class="mb-12">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#e67e22] mb-4 text-center">
+                🏗 Arquitetura do Pipeline
+            </h2>
+            <p class="text-lg text-gray-700 text-center mb-6">
+                Explore a função de cada camada clicando nos cards abaixo.
+            </p>
+            <div class="flex flex-col md:flex-row items-center md:space-x-8 space-y-8 md:space-y-0 relative justify-center">
+                <!-- Layer: Landing Zone -->
+                <div class="flex flex-col items-center">
+                    <div id="landing-zone-card" class="card p-6 bg-yellow-100 text-yellow-800 rounded-xl cursor-pointer hover:bg-yellow-200 transition-colors">
+                        <h3 class="font-semibold text-lg">Landing Zone</h3>
+                        <p class="text-sm mt-1">Dados Brutos da API</p>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <span class="text-2xl text-gray-400">➡️</span>
+
+                <!-- Layer: Bronze -->
+                <div class="flex flex-col items-center">
+                    <div id="bronze-card" class="card p-6 bg-gray-200 rounded-xl cursor-pointer hover:bg-gray-300 transition-colors">
+                        <h3 class="font-semibold text-lg">Bronze</h3>
+                        <p class="text-sm mt-1">Ingestão & Rastreabilidade</p>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <span class="text-2xl text-gray-400">➡️</span>
+
+                <!-- Layer: Silver -->
+                <div class="flex flex-col items-center">
+                    <div id="silver-card" class="card p-6 bg-gray-200 rounded-xl cursor-pointer hover:bg-gray-300 transition-colors">
+                        <h3 class="font-semibold text-lg">Silver</h3>
+                        <p class="text-sm mt-1">Limpeza & Enriquecimento</p>
+                    </div>
+                </div>
+                
+                <!-- Arrow -->
+                <span class="text-2xl text-gray-400">➡️</span>
+
+                <!-- Layer: Gold -->
+                <div class="flex flex-col items-center">
+                    <div id="gold-card" class="card p-6 bg-yellow-400 text-yellow-900 rounded-xl cursor-pointer hover:bg-yellow-500 transition-colors">
+                        <h3 class="font-semibold text-lg">Gold</h3>
+                        <p class="text-sm mt-1">Agregação & Análise</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="details" class="mt-8 p-6 bg-white rounded-xl">
+                <div id="landing-zone-details" class="details-content">
+                    <h4 class="font-bold text-xl mb-2 text-[#e67e22]">Landing Zone</h4>
+                    <p class="text-gray-700 mb-4">Armazena os dados brutos coletados da API, mantendo o histórico dos arquivos originais. É a sua área de aterrissagem.</p>
+                </div>
+                <div id="bronze-details" class="details-content">
+                    <h4 class="font-bold text-xl mb-2 text-[#e67e22]">Bronze</h4>
+                    <p class="text-gray-700 mb-4">A camada Bronze recebe os dados brutos da Landing Zone e os armazena no formato **Delta Lake**. Isso garante rastreabilidade e a capacidade de voltar a versões anteriores dos dados.</p>
+                </div>
+                <div id="silver-details" class="details-content">
+                    <h4 class="font-bold text-xl mb-2 text-[#e67e22]">Silver</h4>
+                    <p class="text-gray-700 mb-4">Nesta camada, os dados são limpos e enriquecidos. As transformações incluem a conversão de tipos de dados, normalização de strings e a remoção de duplicatas, preparando os dados para a análise.</p>
+                </div>
+                <div id="gold-details" class="details-content">
+                    <h4 class="font-bold text-xl mb-2 text-[#e67e22]">Gold</h4>
+                    <p class="text-gray-700 mb-4">A camada Gold contém dados sumarizados e agregados. É a camada final, otimizada para o consumo por ferramentas de Business Intelligence (BI) para gerar dashboards e relatórios.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="execucao" class="mb-12">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#e67e22] mb-6 text-center">
+                🏃‍♂️ Execução do Pipeline
+            </h2>
+            <p class="text-lg text-gray-700 text-center mb-6">
+                Siga os passos abaixo para executar o pipeline completo, do raw até a camada Gold.
+            </p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 flex flex-col items-center">
+                    <div class="bg-gray-200 text-gray-700 font-bold w-10 h-10 rounded-full flex items-center justify-center mb-4">1️⃣</div>
+                    <h3 class="font-bold text-xl mb-2 text-[#e67e22] text-center">Ingestão da API</h3>
+                    <p class="text-gray-700 text-center mb-4">Coleta os dados da API e salva localmente.</p>
+                    <div class="code-block w-full">
+                        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                        <code>poetry run python src/python/01_ingestao_api.py</code>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="card p-6 flex flex-col items-center">
+                    <div class="bg-gray-200 text-gray-700 font-bold w-10 h-10 rounded-full flex items-center justify-center mb-4">2️⃣</div>
+                    <h3 class="font-bold text-xl mb-2 text-[#e67e22] text-center">Envio para Landing Zone</h3>
+                    <p class="text-gray-700 text-center mb-4">Envia os arquivos brutos para o bucket S3.</p>
+                    <div class="code-block w-full">
+                        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                        <code>poetry run python src/python/02_envio_landingzone_aws.py</code>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="card p-6 flex flex-col items-center">
+                    <div class="bg-gray-200 text-gray-700 font-bold w-10 h-10 rounded-full flex items-center justify-center mb-4">3️⃣</div>
+                    <h3 class="font-bold text-xl mb-2 text-[#e67e22] text-center">Carga Bronze</h3>
+                    <p class="text-gray-700 text-center mb-4">Ingestão dos dados na camada Bronze em Delta Lake.</p>
+                    <div class="code-block w-full">
+                        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                        <code>poetry run python src/python/03_carga_bronze_aws.py</code>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="card p-6 flex flex-col items-center">
+                    <div class="bg-gray-200 text-gray-700 font-bold w-10 h-10 rounded-full flex items-center justify-center mb-4">4️⃣</div>
+                    <h3 class="font-bold text-xl mb-2 text-[#e67e22] text-center">Transformação Silver</h3>
+                    <p class="text-gray-700 text-center mb-4">Aplica limpeza, normalização e deduplicação.</p>
+                    <div class="code-block w-full">
+                        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                        <code>poetry run python src/python/04_transform_silver_aws.py</code>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="card p-6 flex flex-col items-center">
+                    <div class="bg-gray-200 text-gray-700 font-bold w-10 h-10 rounded-full flex items-center justify-center mb-4">5️⃣</div>
+                    <h3 class="font-bold text-xl mb-2 text-[#e67e22] text-center">Geração Gold</h3>
+                    <p class="text-gray-700 text-center mb-4">Executa agregações e gera datasets para análise.</p>
+                    <div class="code-block w-full">
+                        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                        <code>poetry run python src/python/05_gera_gold_aws.py</code>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="estrutura-projeto" class="mt-8 mb-12 p-6 card">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#e67e22] mb-4 text-center">
+                ⚙️ Estrutura do Projeto
+            </h2>
+            <div id="file-tree" class="text-gray-700 text-sm">
+                <ul class="list-none ml-4 p-0">
+                    <li class="mb-2">
+                        <span class="font-mono">.</span>
+                        <ul class="list-none ml-4 p-0">
+                            <li class="flex items-center space-x-2"><span>📂</span><span class="font-mono">data</span></li>
+                            <li class="flex items-center space-x-2"><span>📂</span><span class="font-mono">log</span></li>
+                            <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">poetry.lock</span></li>
+                            <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">pyproject.toml</span></li>
+                            <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">README.md</span></li>
+                            <li class="flex items-center space-x-2 cursor-pointer expanded" onclick="toggleFiles(this)">
+                                <span>📂</span>
+                                <span class="font-mono">src</span>
+                                <span class="text-gray-500 ml-1 arrow transform">▶️</span>
+                            </li>
+                            <ul class="list-none ml-8 p-0">
+                                <li class="flex items-center space-x-2 cursor-pointer expanded" onclick="toggleFiles(this)">
+                                    <span>📂</span>
+                                    <span class="font-mono">python</span>
+                                    <span class="text-gray-500 ml-1 arrow transform">▶️</span>
+                                </li>
+                                <ul class="list-none ml-12 p-0">
+                                    <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">01_ingestao_api.py</span></li>
+                                    <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">02_envio_landingzone_aws.py</span></li>
+                                    <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">03_carga_bronze_aws.py</span></li>
+                                    <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">04_transform_silver_aws.py</span></li>
+                                    <li class="flex items-center space-x-2"><span>📄</span><span class="font-mono">05_gera_gold_aws.py</span></li>
+                                </ul>
+                            </ul>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function toggleDetails(cardId) {
+            const detailsElement = document.getElementById(cardId + '-details');
+            const allDetails = document.querySelectorAll('.details-content');
+            allDetails.forEach(details => {
+                if (details.id !== detailsElement.id) {
+                    details.classList.remove('show');
+                }
+            });
+            detailsElement.classList.toggle('show');
+        }
+
+        document.getElementById('landing-zone-card').addEventListener('click', () => toggleDetails('landing-zone'));
+        document.getElementById('bronze-card').addEventListener('click', () => toggleDetails('bronze'));
+        document.getElementById('silver-card').addEventListener('click', () => toggleDetails('silver'));
+        document.getElementById('gold-card').addEventListener('click', () => toggleDetails('gold'));
+        
+        async function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            try {
+                const textToCopy = codeBlock.textContent;
+                await navigator.clipboard.writeText(textToCopy);
+                button.textContent = 'Copiado!';
+                setTimeout(() => {
+                    button.textContent = 'Copiar';
+                }, 2000);
+            } catch (err) {
+                console.error('Falha ao copiar o texto: ', err);
+            }
+        }
+        
+        function toggleFiles(element) {
+            element.classList.toggle('expanded');
+            const nestedList = element.nextElementSibling;
+            if (nestedList) {
+                nestedList.style.display = nestedList.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
