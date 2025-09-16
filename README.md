@@ -4,6 +4,7 @@
 ![PySpark](https://img.shields.io/badge/pyspark-3.4.0-orange)
 ![Delta Lake](https://img.shields.io/badge/delta-lake-green)
 ![Poetry](https://img.shields.io/badge/poetry-dependencies-blueviolet)
+![Docker](https://img.shields.io/badge/docker-ready-informational)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 Este projeto implementa um **pipeline de dados** com arquitetura em camadas (**Bronze**, **Silver** e **Gold**) usando **PySpark**, **Delta Lake** e **AWS S3**.  
@@ -12,6 +13,10 @@ O objetivo é transformar dados brutos em **insights prontos para análise de ne
 ---
 
 ## 🏗 Arquitetura do Pipeline
+
+A estrutura do projeto segue o seguinte fluxo:
+
+* **API** → **Raw/Landingzone** → **Bronze** → **Silver** → **Gold**
 
 O pipeline segue a **arquitetura em 3 camadas**:
 
@@ -32,24 +37,33 @@ O pipeline segue a **arquitetura em 3 camadas**:
 ├── data
 │   └── raw
 │       └── salarios_*.parquet
+├── docs
+│   └── Pipeline ETL API.html
 ├── log
 │   └── log.txt
+├── src
+│   ├── dashboard
+│   │   └── Painel_ETL.py
+│   └── python
+│       ├── 01_ingestao_api.py
+│       ├── 02_envio_landingzone_aws.py
+│       ├── 03_carga_bronze_aws.py
+│       ├── 04_transform_silver_aws.py
+│       └── 05_gera_gold_aws.py
+├── .env
+├── Dockerfile
 ├── poetry.lock
 ├── pyproject.toml
 ├── README.md
-└── src
-└── python
-├── 01_ingestao_api.py
-├── 02_envio_landingzone_aws.py
-├── 03_carga_bronze_aws.py
-├── 04_transform_silver_aws.py
-└── 05_gera_gold_aws.py
+└── run_pipeline.sh
 
 ```
 
 - `data/raw/` → Armazena os arquivos brutos baixados da API.  
 - `log/` → Armazena logs do pipeline (`log.txt`).  
-- `src/python/` → Contém os scripts de ETL, seguindo a ordem de execução.
+- `src/python/` → Scripts de ETL (ordem sequencial).  
+- `src/dashboard/` → Painel interativo em Streamlit (`Painel_ETL.py`).  
+- `run_pipeline.sh` → Script para execução sequencial com Docker.  
 
 ---
 
@@ -92,61 +106,72 @@ S3_BUCKET_NAME=BUCKETAWS
 Instale as dependências com Poetry:
 
 ```bash
-poetry install -no-root
+poetry install --no-root
 ```
 
 ---
 
-## 🏃‍♂️ Execução do Pipeline
+## 🏃‍♂️ Formas de Execução
 
-O pipeline é executado na **ordem dos scripts**, garantindo que os dados fluam corretamente do raw até o Gold:
+Atualmente o projeto possui **3 modos de execução**:
 
-### 1️⃣ Ingestão da API
+### 🔹 1. Execução direta individual
 
-Coleta os dados da API e salva localmente:
+Executando cada script manualmente via terminal:
 
 ```bash
 poetry run python src/python/01_ingestao_api.py
-```
-
-### 2️⃣ Envio para Landing Zone AWS
-
-Envia os arquivos brutos para o bucket S3:
-
-```bash
 poetry run python src/python/02_envio_landingzone_aws.py
-```
-
-### 3️⃣ Carga Bronze
-
-Ingestão dos dados na camada Bronze em Delta Lake:
-
-```bash
 poetry run python src/python/03_carga_bronze_aws.py
-```
-
-### 4️⃣ Transformação Silver
-
-Aplica limpeza, normalização e deduplicação:
-
-```bash
 poetry run python src/python/04_transform_silver_aws.py
-```
-
-### 5️⃣ Geração Gold
-
-Executa agregações e gera datasets prontos para análise:
-
-```bash
 poetry run python src/python/05_gera_gold_aws.py
 ```
+
+---
+
+### 🔹 2. Execução sequencial via `run_pipeline.sh`
+
+Arquivo que executa todos os scripts na ordem correta, dentro de um container Docker:
+
+```bash
+./run_pipeline.sh
+```
+
+Conteúdo do arquivo:
+
+```bash
+#!/bin/bash
+set -e
+
+docker run --rm -it --env-file .env pipeline-etl poetry run python src/python/01_ingestao_api.py
+docker run --rm -it --env-file .env pipeline-etl poetry run python src/python/02_envio_landingzone_aws.py
+docker run --rm -it --env-file .env pipeline-etl poetry run python src/python/03_carga_bronze_aws.py
+docker run --rm -it --env-file .env pipeline-etl poetry run python src/python/04_transform_silver_aws.py
+docker run --rm -it --env-file .env pipeline-etl poetry run python src/python/05_gera_gold_aws.py
+```
+
+---
+
+### 🔹 3. Execução via Docker + Dashboard Streamlit
+
+A imagem já está publicada no Docker Hub:
+👉 [felipealvss/pipeline-etl](https://hub.docker.com/r/felipealvss/pipeline-etl)
+
+Basta executar:
+
+```bash
+docker pull felipealvss/pipeline-etl
+docker run -p 8501:8501 --env-file .env felipealvss/pipeline-etl
+```
+
+Isso iniciará um **painel Streamlit** no navegador, onde cada botão executa individualmente os scripts do pipeline de forma **interativa e visual**.
 
 ---
 
 ## 📈 Futuras Melhorias
 
 * Suporte a múltiplas fontes de dados
-* Integração com ferramentas de BI (PowerBI, Tableau)
+* Omplementações de testes automatizados (com Pytest)
 * Monitoramento e alertas automáticos do pipeline
 * Versionamento e histórico dos datasets Delta
 
@@ -158,11 +183,14 @@ poetry run python src/python/05_gera_gold_aws.py
 * [Delta Lake Documentation](https://delta.io/)
 * [AWS S3 Documentation](https://aws.amazon.com/s3/)
 * [Poetry - Python Dependency Management](https://python-poetry.org/)
+* [Streamlit](https://streamlit.io/)
+* [Docker Hub - pipeline-etl](https://hub.docker.com/r/felipealvss/pipeline-etl)
 
 ---
 
 ## 💡 Dicas
 
 * Explore os scripts em `src/python/` para customizar transformações.
+* Use o painel `Painel_ETL.py` para uma experiência mais interativa.
 * Monitore logs em `log/log.txt` para depuração e auditoria.
 * Ajuste os caminhos no `.env` conforme seu ambiente local ou bucket S3.
