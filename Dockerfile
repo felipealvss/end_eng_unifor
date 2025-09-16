@@ -1,15 +1,18 @@
-# Usa uma imagem base leve com Python 3.10
-FROM python:3.10-slim
+# Use uma imagem base Python 3.10
+FROM python:3.10-slim-bullseye
 
-# Define variáveis de ambiente para o Spark.
-ENV SPARK_VERSION=3.4.0 \
-    HADOOP_VERSION=3 \
-    SPARK_HOME=/opt/spark \
-    PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+# Variáveis de ambiente
+ENV SPARK_VERSION="3.4.0" \
+    HADOOP_VERSION="3" \
+    SPARK_HOME="/opt/spark"
+
+# Adicione o Spark e o Poetry ao PATH para que os comandos sejam reconhecidos
+ENV PATH="/root/.local/bin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH"
 
 # Instala ferramentas necessárias e baixa o Spark
+# Usando a versão 21 de Java, pois a 17 não está disponível
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-17-jre-headless \
+    openjdk-11-jre-headless \
     curl \
     && rm -rf /var/lib/apt/lists/* \
     && curl -o /tmp/spark.tgz "https://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz" \
@@ -17,21 +20,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && mv /opt/spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION $SPARK_HOME \
     && rm /tmp/spark.tgz
 
-# Instala o Poetry
-RUN pip install poetry
-
 # Define o diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de dependência e instala
-# A ordem é importante para aproveitar o cache do Docker (build caching)
-COPY pyproject.toml poetry.lock /app/
-RUN poetry install --no-root
+# Copia os arquivos de configuração do Poetry
+COPY pyproject.toml poetry.lock ./
 
-# Copia todo o código do seu projeto
-COPY . /app
+# Instala as dependências do Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-root --no-interaction --no-ansi
 
-# Exponha a porta do Streamlit
+# Copia o restante do código da aplicação
+COPY . .
+
+# Expõe a porta do Streamlit
 EXPOSE 8501
 
 # Comando padrão para iniciar a aplicação Streamlit
