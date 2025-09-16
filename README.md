@@ -59,22 +59,22 @@ Crie um arquivo `.env` na raiz do projeto (ou copie de `.env.example`) e configu
 
 ```env
 # Definições de ambiente
-LOG_DIR = ./log
-LOG_FILE = log.txt
-RAW_DIR = ./data/raw
-RAW_FILE = dados_brutos.parquet
+LOG_DIR=./log
+LOG_FILE=log.txt
+RAW_DIR=./data/raw
+RAW_FILE=dados_brutos.parquet
 
 # Informações para API
-LINK_API = "https://api-dados-abertos.cearatransparente.ce.gov.br/transparencia/servidores/salarios"
-ANO_API = 2025
-MES_API = 6
-PAGINA_INI = 1
+LINK_API=https://api-dados-abertos.cearatransparente.ce.gov.br/transparencia/servidores/salarios
+ANO_API=2025
+MES_API=6
+PAGINA_INI=1
 
 # Destinos folders AWS S3
-LANDINGZONE_DIR = landingzone
-BRONZE_DIR = bronze
-SILVER_DIR = silver
-GOLD_DIR = gold
+LANDINGZONE_DIR=landingzone
+BRONZE_DIR=bronze
+SILVER_DIR=silver
+GOLD_DIR=gold
 
 # Credenciais AWS
 AWS_ACCESS_KEY_ID=CHAVEACESSOAWS
