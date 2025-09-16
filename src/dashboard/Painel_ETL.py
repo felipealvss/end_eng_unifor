@@ -5,7 +5,7 @@ import os
 st.set_page_config(page_title="📊 Dashboard Principal", layout="wide")
 
 # Diretório base
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 st.title("🚀 Pipeline de ETL")
 st.subheader("Orquestração de Etapas")
@@ -23,26 +23,49 @@ pipeline_steps = {
     "5. Geração Gold": "05_gera_gold_aws.py"
 }
 
-# Renderiza botões
-for step_name, script_file in pipeline_steps.items():
-    st.divider()
-    if st.button(step_name, use_container_width=True):
-        try:
-            with st.spinner(f"Executando {step_name}..."):
-                result = subprocess.run(
-                    ["poetry", "run", "python", os.path.join(SCRIPT_DIR, script_file)],
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
-            st.success(f"✅ Etapa '{step_name}' concluída com sucesso!")
-            log_area.code(result.stdout or "Sem saída gerada", language="bash")
-        except subprocess.CalledProcessError as e:
-            st.error(f"❌ Erro na etapa '{step_name}'!")
-            log_area.code(e.stderr or "Sem log de erro", language="bash")
-        except Exception as e:
-            st.error(f"❌ Ocorreu um erro inesperado: {e}")
-            log_area.code(str(e), language="bash")
+# CSS customizado para botões
+st.markdown("""
+<style>
+div[data-testid^="stButton"] > button {
+    height: auto;
+    width: auto;
+    min-height: 120px;
+    min-width: 160px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 6px;
+    color: black;
+    white-space: normal;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# centralizar botões
+left_space, buttons_area, right_space = st.columns([1, 3, 1])
+
+with buttons_area:
+    # Criar os botões em uma linha horizontal
+    cols = st.columns(len(pipeline_steps))
+    for i, (step_name, script_file) in enumerate(pipeline_steps.items()):
+        with cols[i]:
+            if st.button(step_name, key=step_name):
+                try:
+                    with st.spinner(f"Executando {step_name}..."):
+                        result = subprocess.run(
+                            ["poetry", "run", "python", os.path.join(SCRIPT_DIR, "python", script_file)],
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        )
+                    st.success(f"✅ Etapa '{step_name}' concluída com sucesso!")
+                    log_area.code(result.stdout or "Sem saída gerada", language="bash")
+                except subprocess.CalledProcessError as e:
+                    st.error(f"❌ Erro na etapa '{step_name}'!")
+                    log_area.code(e.stderr or "Sem log de erro", language="bash")
+                except Exception as e:
+                    st.error(f"❌ Ocorreu um erro inesperado: {e}")
+                    log_area.code(str(e), language="bash")
 
 # Visualização de dados da camada Gold
 #st.subheader("Visualização Camada Gold")

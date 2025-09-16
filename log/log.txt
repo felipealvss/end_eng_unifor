@@ -58,3 +58,9 @@
 2025-09-13 23:01:31,417 - INFO - Dados da camada Gold salvos com sucesso.
 2025-09-13 23:01:31,622 - INFO - SparkSession encerrada.
 2025-09-13 23:01:31,622 - INFO - Closing down clientserver connection
+2025-09-15 21:03:00,570 - INFO - ----- Inicio de execucao do script: 01_ingestao_api.py -----
+2025-09-15 21:03:01,370 - INFO - Conexão bem-sucedida.
+2025-09-15 21:03:01,370 - INFO - Ano: 2025 Mês: 6 Total de páginas: 1859
+2025-09-15 21:14:17,517 - INFO - Extração concluída.
+2025-09-15 21:14:17,518 - INFO - Total de registros obtidos: 185849
+2025-09-15 21:14:18,599 - INFO - Arquivo salvo em: ./data/raw/salarios_2025_06_250915_211417.parquet
