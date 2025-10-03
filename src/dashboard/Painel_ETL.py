@@ -26,6 +26,7 @@ pipeline_steps = {
 # CSS customizado para botões
 st.markdown("""
 <style>
+/* Estilo padrão dos botões individuais */
 div[data-testid^="stButton"] > button {
     height: auto;
     width: auto;
@@ -38,14 +39,25 @@ div[data-testid^="stButton"] > button {
     color: black;
     white-space: normal;
 }
+
+/* Estilo especial do botão Executar Pipeline Completo */
+div[data-testid="stButton"][key="pipeline_completo"] > button {
+    height: 160px !important;
+    width: 100% !important;
+    border-radius: 20px !important;
+    font-weight: 700 !important;
+    font-size: 20px !important;
+    background-color: #4CAF50 !important; /* verde destaque */
+    color: white !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# centralizar botões
+# Centralizar botões individuais
 left_space, buttons_area, right_space = st.columns([1, 3, 1])
 
 with buttons_area:
-    # Criar os botões em uma linha horizontal
+    # Botões individuais em linha
     cols = st.columns(len(pipeline_steps))
     for i, (step_name, script_file) in enumerate(pipeline_steps.items()):
         with cols[i]:
@@ -67,6 +79,30 @@ with buttons_area:
                     st.error(f"❌ Ocorreu um erro inesperado: {e}")
                     log_area.code(str(e), language="bash")
 
-# Visualização de dados da camada Gold
-#st.subheader("Visualização Camada Gold")
-#st.info("Aqui você pode adicionar código para ler os dados da sua camada Gold e exibir um resumo ou gráfico.")
+# --- Botão único fora do bloco, centralizado na tela ---
+st.markdown("---")  # linha divisória opcional
+left, center, right = st.columns([1, 2, 1])
+with center:
+    if st.button("Executar Pipeline Completo", key="pipeline_completo"):
+        logs = ""
+        try:
+            for step_name, script_file in pipeline_steps.items():
+                with st.spinner(f"Executando {step_name}..."):
+                    result = subprocess.run(
+                        ["poetry", "run", "python", os.path.join(SCRIPT_DIR, "python", script_file)],
+                        check=True,
+                        capture_output=True,
+                        text=True,
+                    )
+                st.success(f"✅ Etapa '{step_name}' concluída com sucesso!")
+                logs += f"### {step_name}\n{result.stdout or 'Sem saída gerada'}\n\n"
+
+        except subprocess.CalledProcessError as e:
+            st.error(f"❌ Erro na etapa '{step_name}'!")
+            logs += f"### {step_name} (ERRO)\n{e.stderr or 'Sem log de erro'}\n\n"
+
+        except Exception as e:
+            st.error(f"❌ Ocorreu um erro inesperado: {e}")
+            logs += f"### Erro inesperado\n{str(e)}\n\n"
+
+        log_area.markdown(logs)
