@@ -34,16 +34,17 @@ bucket_name           = os.getenv('S3_BUCKET_NAME')
 region                = os.getenv('AWS_REGION')
 silver_dir            = os.getenv('SILVER_DIR')
 gold_dir              = os.getenv('GOLD_DIR')
+tb_salarios           = os.getenv('TB_SALARIOS')
 ano                   = int(os.getenv('ANO_API'))
 mes                   = int(os.getenv("MES_API"))
 
 origem = (
     f"s3a://{bucket_name}/{silver_dir}/"
-    f"ano={ano}/mes={mes:02d}/"
+    f"{tb_salarios}"
 )
 destino = (
     f"s3a://{bucket_name}/{gold_dir}/"
-    f"ano={ano}/mes={mes:02d}/"
+    f"{tb_salarios}"
 )
 
 # Lista de pacotes Maven necessários para S3 e Delta Lake

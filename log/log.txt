@@ -64,3 +64,9 @@
 2025-09-15 21:14:17,517 - INFO - Extração concluída.
 2025-09-15 21:14:17,518 - INFO - Total de registros obtidos: 185849
 2025-09-15 21:14:18,599 - INFO - Arquivo salvo em: ./data/raw/salarios_2025_06_250915_211417.parquet
+2025-10-04 11:12:16,368 - INFO - ----- Inicio de execucao do script: 01_ingestao_api.py -----
+2025-10-04 11:12:17,968 - INFO - Conexão bem-sucedida.
+2025-10-04 11:12:17,968 - INFO - Ano: 2025 Mês: 6 Total de páginas: 1859
+2025-10-04 11:27:36,579 - INFO - Extração concluída.
+2025-10-04 11:27:36,580 - INFO - Total de registros obtidos: 185849
+2025-10-04 11:27:37,303 - INFO - Arquivo salvo em: ./data/raw/salarios_2025_06_251004_112736.parquet

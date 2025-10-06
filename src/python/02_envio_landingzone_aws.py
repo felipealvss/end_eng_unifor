@@ -35,23 +35,24 @@ bucket_name           = os.getenv('S3_BUCKET_NAME')
 region                = os.getenv('AWS_REGION')
 raw_dir               = os.getenv('RAW_DIR')
 landingzone_dir       = os.getenv('LANDINGZONE_DIR')
+tb_salarios           = os.getenv('TB_SALARIOS')
 ano                   = int(os.getenv('ANO_API'))
 mes                   = int(os.getenv("MES_API"))
 
 # Obter o arquivo mais recente
-def obter_ultimo_arquivo_parquet(diretorio):
-    arquivos = glob.glob(os.path.join(diretorio, '*.parquet'))
+def obter_ultimo_arquivo(diretorio):
+    arquivos = glob.glob(os.path.join(diretorio, '*.avro'))
     if not arquivos:
-        raise FileNotFoundError(f"Nenhum arquivo .parquet encontrado em {diretorio}")
+        raise FileNotFoundError(f"Nenhum arquivo .avro encontrado em {diretorio}")
     #ultimo_arquivo = max(arquivos, key=os.path.getctime)
     arquivos.sort()
     ultimo_arquivo = arquivos[-1]
     return ultimo_arquivo
 
-origem = obter_ultimo_arquivo_parquet(raw_dir)
+origem = obter_ultimo_arquivo(raw_dir)
 destino = (
     f"s3a://{bucket_name}/{landingzone_dir}/"
-    f"ano={ano}/mes={mes:02d}/"
+    f"{tb_salarios}"
 )
 
 logger.info(f"Arquivo mais recente encontrado: {origem}")
@@ -61,9 +62,10 @@ logger.info(f"Destino no S3: {destino}")
 delta_package = "io.delta:delta-core_2.12:2.4.0"
 hadoop_aws_package = "org.apache.hadoop:hadoop-aws:3.3.1"
 aws_sdk_package = "com.amazonaws:aws-java-sdk-bundle:1.11.901"
+avro_package = "org.apache.spark:spark-avro_2.12:3.4.1"
 
 # Junta todos os pacotes em uma string separada por vírgulas
-all_packages = f"{delta_package},{hadoop_aws_package},{aws_sdk_package}"
+all_packages = f"{delta_package},{hadoop_aws_package},{aws_sdk_package},{avro_package}"
 
 builder = (
     SparkSession.builder.appName("ProcessamentoDadosS3")
@@ -85,8 +87,8 @@ logger.info("SparkSession e Delta Lake configurados com sucesso.")
 try:
     logger.info(f"Lendo dados do caminho: {origem}")
 
-    df_bruto = spark.read.parquet(origem)
-    df_bruto.write.format("parquet").mode("overwrite").save(destino)
+    df_bruto = spark.read.format("avro").load(origem)
+    df_bruto.write.format("avro").mode("overwrite").save(destino)
     logger.info("Dados salvos com sucesso em formato Parquet.")
 
 except Exception as e:

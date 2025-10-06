@@ -82,8 +82,8 @@ df = pd.DataFrame(data)
 
 mes = int(os.getenv("MES_API"))
 timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-output_file = os.path.join(output_dir, f"salarios_{ano}_{mes:02d}_{timestamp}.parquet")
+output_file = os.path.join(output_dir, f"salarios_{ano}_{mes:02d}_{timestamp}.avro")
 
-df.to_parquet(output_file, engine="pyarrow", index=False)
+df.to_avro(output_file, engine="fastavro", index=False)
 
 logger.info(f"Arquivo salvo em: {output_file}")
